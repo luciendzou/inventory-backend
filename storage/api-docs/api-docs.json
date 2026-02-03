@@ -1,0 +1,3898 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Inventory API Documentation",
+        "description": "API documentation for the Inventory project",
+        "contact": {
+            "email": "your-email@example.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Inventory API Server"
+        }
+    ],
+    "paths": {
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Connexion utilisateur",
+                "description": "Retourne l'utilisateur et un token Sanctum",
+                "operationId": "a3b306d14572d1f4bd6c064b3233e7b8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "login",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "login": {
+                                        "type": "string",
+                                        "example": "user@email.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Connexion réussie",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "access_token": {
+                                            "type": "string"
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Identifiants invalides"
+                    }
+                }
+            }
+        },
+        "/api/register": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Créer un utilisateur",
+                "description": "Crée un utilisateur lié à une entreprise",
+                "operationId": "8a56853624e025573120a09a4c75d468",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "phone_number",
+                                    "password",
+                                    "password_confirmation",
+                                    "id_entreprise"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "phone_number": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string"
+                                    },
+                                    "id_entreprise": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                    },
+                                    "profil_id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Utilisateur créé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "access_token": {
+                                            "type": "string"
+                                        },
+                                        "token_type": {
+                                            "type": "string"
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                }
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Déconnexion",
+                "operationId": "fe8f3429cd6979b3b4517e186505f9f9",
+                "responses": {
+                    "200": {
+                        "description": "Déconnexion réussie"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/brands": {
+            "get": {
+                "tags": [
+                    "Brands"
+                ],
+                "summary": "Lister toutes les marques",
+                "description": "Récupère la liste des marques associées à l'entreprise de l'utilisateur.",
+                "operationId": "3c41aa2e65314941e37a634e810c5f73",
+                "responses": {
+                    "200": {
+                        "description": "Succès - Liste récupérée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Brand"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Brands"
+                ],
+                "summary": "Créer une nouvelle marque",
+                "operationId": "1dae5363a453b159e035bc04b3fbc0be",
+                "requestBody": {
+                    "description": "Données de la marque",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nom"
+                                ],
+                                "properties": {
+                                    "nom": {
+                                        "description": "Nom de la marque",
+                                        "type": "string",
+                                        "example": "Apple"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Succès - Marque créée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Brand"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/brands/{id}": {
+            "get": {
+                "tags": [
+                    "Brands"
+                ],
+                "summary": "Afficher les détails d'une marque",
+                "operationId": "767f67c0955810b713c48d4100f02362",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "UUID de la marque",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Succès - Détails de la marque",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Brand"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    },
+                    "404": {
+                        "description": "Marque introuvable"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Brands"
+                ],
+                "summary": "Mettre à jour une marque",
+                "operationId": "1fac61ef4f1f3db38169272ad0e5ed09",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "UUID de la marque",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Champs à modifier",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nom": {
+                                        "type": "string",
+                                        "example": "Samsung"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Succès - Marque mise à jour",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Brand"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    },
+                    "404": {
+                        "description": "Marque introuvable"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Brands"
+                ],
+                "summary": "Supprimer une marque",
+                "operationId": "401903a3c5a05c699953cb0b07a385e2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "UUID de la marque",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Succès - Marque supprimée"
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    },
+                    "404": {
+                        "description": "Marque introuvable"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/categories": {
+            "get": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Lister toutes les catégories",
+                "description": "Récupère la liste des catégories associées à l'entreprise de l'utilisateur connecté.",
+                "operationId": "0a3810ef08509327a6db442d3e4c4b73",
+                "responses": {
+                    "200": {
+                        "description": "Succès - Liste récupérée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Categorie"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Créer une nouvelle catégorie",
+                "operationId": "f44066b315f1a6670d352e128ba39465",
+                "requestBody": {
+                    "description": "Données de la nouvelle catégorie",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name_cat",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "name_cat": {
+                                        "description": "Nom de la catégorie",
+                                        "type": "string",
+                                        "example": "Ordinateurs Portables"
+                                    },
+                                    "type": {
+                                        "description": "Type de la catégorie",
+                                        "type": "string",
+                                        "example": "Matériel"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Succès - Catégorie créée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Categorie"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/categories/{id}": {
+            "get": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Afficher les détails d'une catégorie",
+                "operationId": "829dd0fbc1687efece34524110808262",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "UUID de la catégorie",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Succès - Détails de la catégorie",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Categorie"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    },
+                    "404": {
+                        "description": "Catégorie introuvable ou accès refusé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Mettre à jour une catégorie",
+                "operationId": "68cf6ef85d9b79cea99f6063deca74e3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "UUID de la catégorie",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Champs à mettre à jour",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name_cat": {
+                                        "type": "string",
+                                        "example": "Imprimantes Laser"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "example": "Bureautique"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Succès - Catégorie mise à jour",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Categorie"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    },
+                    "404": {
+                        "description": "Catégorie introuvable"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Supprimer une catégorie",
+                "operationId": "c637fcbceb0196c4d850f96245587511",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "UUID de la catégorie",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Succès - Catégorie supprimée"
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    },
+                    "404": {
+                        "description": "Catégorie introuvable"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/config-entreprises": {
+            "get": {
+                "tags": [
+                    "ConfigEntreprise"
+                ],
+                "summary": "Liste des configurations d'entreprises",
+                "operationId": "2b0ecc6174f5525f40ef674e0a882350",
+                "responses": {
+                    "200": {
+                        "description": "Liste retournée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ConfigEntreprise"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "ConfigEntreprise"
+                ],
+                "summary": "Créer une configuration d'entreprise",
+                "operationId": "d1f64f61a0bf640b3abe3a943d62a6cf",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_entreprise",
+                                    "forfait",
+                                    "nbre_limit_personnel"
+                                ],
+                                "properties": {
+                                    "id_entreprise": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                    },
+                                    "forfait": {
+                                        "type": "string"
+                                    },
+                                    "nbre_limit_personnel": {
+                                        "type": "string"
+                                    },
+                                    "actif": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Configuration créée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ConfigEntreprise"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/config-entreprises/{id}": {
+            "get": {
+                "tags": [
+                    "ConfigEntreprise"
+                ],
+                "summary": "Afficher une configuration",
+                "operationId": "16e34b1f64142b428627695583832a2d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Configuration trouvée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ConfigEntreprise"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "ConfigEntreprise"
+                ],
+                "summary": "Mettre à jour une configuration",
+                "operationId": "d4504d07aadeb4ddc6a7a2762434b2c1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "forfait": {
+                                        "type": "string"
+                                    },
+                                    "nbre_limit_personnel": {
+                                        "type": "string"
+                                    },
+                                    "actif": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Configuration mise à jour",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ConfigEntreprise"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "ConfigEntreprise"
+                ],
+                "summary": "Supprimer une configuration",
+                "operationId": "44236f44c957c89e194f2f31b6b55a3e",
+                "responses": {
+                    "204": {
+                        "description": "Configuration supprimée"
+                    }
+                }
+            }
+        },
+        "/api/config-entreprises/by-entreprise/{idEntreprise}": {
+            "get": {
+                "tags": [
+                    "ConfigEntreprise"
+                ],
+                "summary": "Récupérer la configuration par entreprise",
+                "operationId": "3612b269476c406654c0ea38e391a64f",
+                "parameters": [
+                    {
+                        "name": "idEntreprise",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Configuration trouvée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ConfigEntreprise"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Configuration non trouvée"
+                    }
+                }
+            }
+        },
+        "/api/demandes": {
+            "get": {
+                "tags": [
+                    "Demandes"
+                ],
+                "summary": "Lister toutes les demandes de l’entreprise (Admin)",
+                "description": "Accessible uniquement aux administrateurs. Retourne toutes les demandes de l’entreprise.",
+                "operationId": "getAllDemandes",
+                "responses": {
+                    "200": {
+                        "description": "Liste des demandes",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Demande"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès interdit"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Demandes"
+                ],
+                "summary": "Créer une demande",
+                "description": "Permet à un utilisateur de créer une demande de produits",
+                "operationId": "createDemande",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "lignes"
+                                ],
+                                "properties": {
+                                    "motif": {
+                                        "type": "string",
+                                        "example": "Besoin pour le service IT"
+                                    },
+                                    "agence": {
+                                        "type": "string",
+                                        "example": "Agence Yaoundé"
+                                    },
+                                    "lignes": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "id_product": {
+                                                    "type": "string",
+                                                    "format": "uuid"
+                                                },
+                                                "quantite_demandee": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Demande créée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Demande"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/demandes/{id}": {
+            "get": {
+                "tags": [
+                    "Demandes"
+                ],
+                "summary": "Afficher une demande",
+                "description": "Retourne une demande. Accessible par le propriétaire ou un administrateur.",
+                "operationId": "getDemandeById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la demande",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Détails de la demande",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Demande"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès interdit"
+                    },
+                    "404": {
+                        "description": "Demande introuvable"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/demandes/me": {
+            "get": {
+                "tags": [
+                    "Demandes"
+                ],
+                "summary": "Lister mes demandes",
+                "description": "Retourne uniquement les demandes créées par l'utilisateur connecté",
+                "operationId": "getMyDemandes",
+                "responses": {
+                    "200": {
+                        "description": "Liste des demandes de l'utilisateur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Demande"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/demandes/{id}/validate": {
+            "post": {
+                "tags": [
+                    "Demandes"
+                ],
+                "summary": "Valider une demande",
+                "description": "Permet à un administrateur de valider une demande en attente. \n     *     La validation génère automatiquement des sorties de stock en attente de confirmation.",
+                "operationId": "validateDemande",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Identifiant UUID de la demande à valider",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Demande validée et sorties créées",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Demande validée, sorties créées"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès interdit (utilisateur non administrateur ou entreprise différente)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Accès interdit"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Demande non trouvée ou déjà traitée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Not Found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/demandes/{id}/reject": {
+            "post": {
+                "tags": [
+                    "Demandes"
+                ],
+                "summary": "Refuser une demande",
+                "description": "Permet à un administrateur de refuser une demande de produits encore en attente, appartenant à la même entreprise.",
+                "operationId": "rejectDemande",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Identifiant UUID de la demande",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Demande refusée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Demande refusée"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès interdit (utilisateur non administrateur ou entreprise différente)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Accès interdit"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Demande non trouvée ou déjà traitée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Not Found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/demandes/{id}/sorties": {
+            "get": {
+                "tags": [
+                    "Demandes"
+                ],
+                "summary": "Lister les sorties associées à une demande",
+                "description": "Retourne toutes les sorties de stock générées pour une demande donnée. Accessible uniquement par l'admin ou le créateur de la demande.",
+                "operationId": "fe4dc0a4b50f205d29ec698ac80c0d54",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la demande (UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des sorties associées à la demande",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/SortieStock"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès interdit"
+                    },
+                    "404": {
+                        "description": "Demande non trouvée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/entreprises": {
+            "get": {
+                "tags": [
+                    "Entreprises"
+                ],
+                "summary": "Lister les entreprises",
+                "description": "Récupère la liste des entreprises avec possibilité de filtrer par email.",
+                "operationId": "712e9c332f3e4993d72988da80bea620",
+                "parameters": [
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "description": "Filtrer par email de l'entreprise",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "email"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Entreprise"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Entreprises"
+                ],
+                "summary": "Créer une entreprise",
+                "operationId": "b9931edbf7734e3005034bc1f8c4d938",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "company_name"
+                                ],
+                                "properties": {
+                                    "company_name": {
+                                        "type": "string",
+                                        "example": "Ma Super Entreprise"
+                                    },
+                                    "tax_number": {
+                                        "type": "string",
+                                        "example": "NIU123456"
+                                    },
+                                    "company_email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "contact@entreprise.com"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "Douala, Cameroun"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Entreprise créée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Entreprise"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/entreprises/{id}": {
+            "get": {
+                "tags": [
+                    "Entreprises"
+                ],
+                "summary": "Détails d'une entreprise",
+                "operationId": "750bb8cbb174ff0a9ca9b20324af5a45",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "UUID de l'entreprise",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Entreprise"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Entreprise non trouvée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Entreprises"
+                ],
+                "summary": "Mettre à jour une entreprise",
+                "operationId": "0efcf6f42950723824f2078295a4a839",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Entreprise"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Mise à jour réussie"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Entreprises"
+                ],
+                "summary": "Supprimer une entreprise",
+                "operationId": "b8cde643f92887037e22ba472f77b539",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Supprimé avec succès"
+                    },
+                    "404": {
+                        "description": "Non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/fournisseurs": {
+            "get": {
+                "tags": [
+                    "Fournisseurs"
+                ],
+                "summary": "Lister tous les fournisseurs",
+                "description": "Récupère la liste des fournisseurs de l'entreprise connectée.",
+                "operationId": "f1e6d5720017e58d1f85ade3e7869b14",
+                "responses": {
+                    "200": {
+                        "description": "Succès - Liste récupérée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Fournisseur"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Fournisseurs"
+                ],
+                "summary": "Créer un nouveau fournisseur",
+                "operationId": "0ff9f333fae2b0f26ae48a5f460a1ae6",
+                "requestBody": {
+                    "description": "Données du fournisseur",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nom"
+                                ],
+                                "properties": {
+                                    "nom": {
+                                        "type": "string",
+                                        "example": "Tech Supplier SARL"
+                                    },
+                                    "contact_nom": {
+                                        "type": "string",
+                                        "example": "Jean Dupont",
+                                        "nullable": true
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "contact@techsupplier.com",
+                                        "nullable": true
+                                    },
+                                    "telephone": {
+                                        "type": "string",
+                                        "example": "+237699000000",
+                                        "nullable": true
+                                    },
+                                    "adresse": {
+                                        "type": "string",
+                                        "example": "123 Rue de la République",
+                                        "nullable": true
+                                    },
+                                    "ville": {
+                                        "type": "string",
+                                        "example": "Douala",
+                                        "nullable": true
+                                    },
+                                    "pays": {
+                                        "type": "string",
+                                        "example": "Cameroun",
+                                        "nullable": true
+                                    },
+                                    "actif": {
+                                        "description": "Statut du fournisseur",
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Fournisseur principal pour le matériel IT",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Succès - Fournisseur créé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Fournisseur"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/fournisseurs/{id}": {
+            "get": {
+                "tags": [
+                    "Fournisseurs"
+                ],
+                "summary": "Afficher les détails d'un fournisseur",
+                "operationId": "5cf212014b1aa572368a1dc946c6fbc4",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "UUID du fournisseur",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Succès - Détails du fournisseur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Fournisseur"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    },
+                    "404": {
+                        "description": "Fournisseur introuvable"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Fournisseurs"
+                ],
+                "summary": "Mettre à jour un fournisseur",
+                "operationId": "2d19ad51759d6c2e64485e05b98cad74",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "UUID du fournisseur",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Champs à mettre à jour",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nom": {
+                                        "type": "string"
+                                    },
+                                    "contact_nom": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "telephone": {
+                                        "type": "string"
+                                    },
+                                    "adresse": {
+                                        "type": "string"
+                                    },
+                                    "ville": {
+                                        "type": "string"
+                                    },
+                                    "pays": {
+                                        "type": "string"
+                                    },
+                                    "actif": {
+                                        "type": "boolean"
+                                    },
+                                    "notes": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Succès - Fournisseur mis à jour",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Fournisseur"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    },
+                    "404": {
+                        "description": "Fournisseur introuvable"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Fournisseurs"
+                ],
+                "summary": "Supprimer un fournisseur",
+                "operationId": "5bc0895daf02ac1ca6531966bdc9688f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "UUID du fournisseur",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Succès - Fournisseur supprimé"
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    },
+                    "404": {
+                        "description": "Fournisseur introuvable"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/poles": {
+            "get": {
+                "tags": [
+                    "Poles"
+                ],
+                "summary": "Lister tous les pôles",
+                "operationId": "099822f0589663d8d415a7a1510a5325",
+                "responses": {
+                    "200": {
+                        "description": "Liste des pôles",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id_pole": {
+                                                "type": "string",
+                                                "format": "uuid"
+                                            },
+                                            "nom": {
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Poles"
+                ],
+                "summary": "Créer un pôle",
+                "operationId": "04f113bfa4dc44c1ac75e4510b1e9e03",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nom"
+                                ],
+                                "properties": {
+                                    "nom": {
+                                        "type": "string",
+                                        "example": "Pôle Logistique"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Gère les opérations logistiques"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Pôle créé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id_pole": {
+                                            "type": "string",
+                                            "format": "uuid"
+                                        },
+                                        "nom": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/poles/{id}": {
+            "get": {
+                "tags": [
+                    "Poles"
+                ],
+                "summary": "Afficher un pôle",
+                "operationId": "4870b878a562e29c8e51cfd1e2de03e8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID du pôle",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pôle trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id_pole": {
+                                            "type": "string"
+                                        },
+                                        "nom": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Pôle introuvable"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Poles"
+                ],
+                "summary": "Modifier un pôle",
+                "operationId": "1ef35bd16e1f43c591ec75016ad0deed",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID du pôle",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nom": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Pôle mis à jour"
+                    },
+                    "404": {
+                        "description": "Pôle introuvable"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Poles"
+                ],
+                "summary": "Supprimer un pôle",
+                "operationId": "32b9f28dcd2d6db39d6300537d625e67",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pôle supprimé"
+                    },
+                    "404": {
+                        "description": "Pôle introuvable"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/products": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Lister les produits",
+                "description": "Récupère le stock actuel de l'entreprise.",
+                "operationId": "1bfaa78d1c2c3848ab8165c5dadcad3e",
+                "responses": {
+                    "200": {
+                        "description": "Liste des produits",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Product"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Créer un produit (Admin)",
+                "operationId": "e8185e307706e2cd84bbcf5171e2f09d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nom",
+                                    "quantite_stock",
+                                    "quantite_min_alerte"
+                                ],
+                                "properties": {
+                                    "nom": {
+                                        "type": "string",
+                                        "example": "Ordinateur Portable"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Dell Latitude 5420"
+                                    },
+                                    "quantite_stock": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "prix": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 10.5
+                                    },
+                                    "quantite_min_alerte": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "reference": {
+                                        "type": "string",
+                                        "example": "REF-001"
+                                    },
+                                    "agence": {
+                                        "type": "string",
+                                        "example": "Siège"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Produit créé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Product"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès refusé"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/products/{id}": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Afficher un produit",
+                "operationId": "7ab21ddb713501f3d4c2914892c02a21",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Détails du produit",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Product"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Produit non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Mettre à jour un produit (Admin)",
+                "operationId": "6a7e11900844cd85cff66e662b82bd4c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nom": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "quantite_min_alerte": {
+                                        "type": "integer"
+                                    },
+                                    "prix": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "reference": {
+                                        "type": "string"
+                                    },
+                                    "agence": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Produit mis à jour",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Product"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès refusé"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Supprimer un produit (Admin)",
+                "operationId": "e80a6ca46716acee6b47ea1ac91663c0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Produit supprimé"
+                    },
+                    "403": {
+                        "description": "Accès refusé"
+                    },
+                    "404": {
+                        "description": "Non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/products/{id}/entries": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Lister les entrées de stock d’un produit",
+                "operationId": "11c0da88aeafb5f43cf665e8ee97c360",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des entrées",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/EntreesStock"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Ajouter du stock (Admin)",
+                "operationId": "8730dd35c31aeca122245a819ea62ed3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID du produit",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "quantite_entree",
+                                    "date_reception"
+                                ],
+                                "properties": {
+                                    "quantite_entree": {
+                                        "type": "integer",
+                                        "example": 50
+                                    },
+                                    "num_ordre": {
+                                        "type": "string",
+                                        "example": "ORD-001"
+                                    },
+                                    "fournisseur": {
+                                        "type": "string",
+                                        "example": "Fournisseur Global"
+                                    },
+                                    "date_reception": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-01-01"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Stock ajouté",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EntreesStock"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès refusé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/sorties/{id}/confirm": {
+            "post": {
+                "tags": [
+                    "Sorties"
+                ],
+                "summary": "Confirmer une sortie de stock",
+                "description": "Confirme une sortie de stock en attente après validation de la demande et vérification du stock disponible. Réservé à la direction ou à l’administrateur de la même entreprise.",
+                "operationId": "confirmSortieStock",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Identifiant UUID de la sortie de stock",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sortie confirmée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Sortie confirmée"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès interdit (entreprise différente ou droits insuffisants)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Forbidden"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Sortie non trouvée ou déjà traitée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Not Found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflit métier (demande non validée ou stock insuffisant)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Demande non validée"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Stock insuffisant"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/sorties/{id}/reject": {
+            "post": {
+                "tags": [
+                    "Sorties"
+                ],
+                "summary": "Refuser une sortie de stock",
+                "description": "Permet à l’Admin ou à la Direction de refuser une sortie de stock en attente pour un produit de la même entreprise.",
+                "operationId": "rejectSortieStock",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Identifiant UUID de la sortie de stock",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sortie refusée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Sortie refusée"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès interdit (entreprise différente ou droits insuffisants)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Forbidden"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Sortie non trouvée ou déjà traitée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Not Found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/products/{id}/exits": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Lister les sorties de stock d’un produit",
+                "operationId": "1d106b46ef9f79718c19d018092f8c54",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des sorties",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/SortieStock"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/products/{id}/movements": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Historique des entrées et sorties d’un produit",
+                "description": "Retourne la liste des entrées et sorties de stock pour un produit donné",
+                "operationId": "efcabbf3a0a670dec9e59c7f54609847",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID du produit",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Historique du stock",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "product": {
+                                            "$ref": "#/components/schemas/Product"
+                                        },
+                                        "entries": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/EntreesStock"
+                                            }
+                                        },
+                                        "exits": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/SortieStock"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Produit non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/stock/entries": {
+            "get": {
+                "tags": [
+                    "Stock Mouvements"
+                ],
+                "summary": "Lister toutes les entrées de stock",
+                "description": "Récupère l'historique complet des entrées pour l'entreprise connectée, trié par date décroissante.",
+                "operationId": "bcc73313bcda6edde6d569b666545687",
+                "responses": {
+                    "200": {
+                        "description": "Historique des entrées",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "allOf": [
+                                            {
+                                                "$ref": "#/components/schemas/EntreesStock"
+                                            },
+                                            {
+                                                "properties": {
+                                                    "product": {
+                                                        "$ref": "#/components/schemas/Product"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/stock/exits": {
+            "get": {
+                "tags": [
+                    "Stock Mouvements"
+                ],
+                "summary": "Lister toutes les sorties de stock",
+                "description": "Récupère l'historique complet des sorties pour l'entreprise connectée.",
+                "operationId": "d879351dabd7482e88177d878e81dee0",
+                "responses": {
+                    "200": {
+                        "description": "Historique des sorties",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "allOf": [
+                                            {
+                                                "$ref": "#/components/schemas/SortieStock"
+                                            },
+                                            {
+                                                "properties": {
+                                                    "product": {
+                                                        "$ref": "#/components/schemas/Product"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/profils": {
+            "get": {
+                "tags": [
+                    "Profiles"
+                ],
+                "summary": "Get list of profiles",
+                "operationId": "0976b5f607b930b622a1d8d0324d402e",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Profil"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Profiles"
+                ],
+                "summary": "Create a new profile",
+                "operationId": "b29c2b91a965792b436e85c131593a43",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nom"
+                                ],
+                                "properties": {
+                                    "nom": {
+                                        "type": "string",
+                                        "example": "Moderator"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Moderates content"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Profile created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Profil"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/profils/{id}": {
+            "get": {
+                "tags": [
+                    "Profiles"
+                ],
+                "summary": "Get profile information",
+                "operationId": "a99e84c692fc28d7ecd2a0ec7f969554",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Profil"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Profile not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Profiles"
+                ],
+                "summary": "Update existing profile",
+                "operationId": "0d297dd1b9d4623e0db7a92b17bca994",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nom": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profile updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Profil"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Profiles"
+                ],
+                "summary": "Delete existing profile",
+                "operationId": "3b1fcc539f0167e602bad5530529865c",
+                "responses": {
+                    "204": {
+                        "description": "Profile deleted"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/users": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get list of users",
+                "description": "Returns list of all users of the same entreprise",
+                "operationId": "getUsersList",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/User"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Create a new user",
+                "description": "Create a new user (Admin only)",
+                "operationId": "storeUser",
+                "responses": {
+                    "201": {
+                        "description": "User created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/users/{id}": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get user by ID",
+                "description": "Returns a single user with profile information",
+                "operationId": "getUserById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User ID (UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Update user information",
+                "operationId": "updateUser",
+                "responses": {
+                    "200": {
+                        "description": "User updated successfully"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "User not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Delete a user (Admin only)",
+                "operationId": "destroyUser",
+                "responses": {
+                    "204": {
+                        "description": "User deleted"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/users/upload-media": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Upload image or file",
+                "description": "Upload images to images/ folder and other files to files/ folder",
+                "operationId": "uploadUserMedia",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "file"
+                                ],
+                                "properties": {
+                                    "file": {
+                                        "description": "Image or file to upload",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Upload successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "type": {
+                                            "type": "string",
+                                            "example": "image"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "/storage/images/abc123.png"
+                                        },
+                                        "original_name": {
+                                            "type": "string",
+                                            "example": "photo.png"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/users/{id}/assign-pole": {
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Assigner un pôle à un utilisateur",
+                "description": "Permet à un administrateur d’assigner ou de changer le pôle d’un utilisateur.",
+                "operationId": "assignPole",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Identifiant UUID de l'utilisateur",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_pole"
+                                ],
+                                "properties": {
+                                    "id_pole": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "example": "dff18e56-c7eb-4e9c-9fc2-91e3f2d059ac"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Pôle assigné avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Pôle assigné à l'utilisateur"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Utilisateur ou pôle non trouvé"
+                    },
+                    "403": {
+                        "description": "Action interdite"
+                    },
+                    "401": {
+                        "description": "Non authentifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Product": {
+                "title": "Product",
+                "description": "Product model",
+                "properties": {
+                    "id_product": {
+                        "description": "Primary key",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "nom": {
+                        "description": "Product name",
+                        "type": "string"
+                    },
+                    "description": {
+                        "description": "Product description",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "quantite_stock": {
+                        "description": "Current stock quantity",
+                        "type": "integer"
+                    },
+                    "quantite_min_alerte": {
+                        "description": "Minimum stock alert threshold",
+                        "type": "integer"
+                    },
+                    "reference": {
+                        "description": "Product reference code",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "is_direction": {
+                        "description": "Is the product for direction only",
+                        "type": "boolean"
+                    },
+                    "agence": {
+                        "description": "Agency associated with the product",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "Creation timestamp",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "description": "Last update timestamp",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Brand": {
+                "title": "Brand",
+                "description": "Marque de produit",
+                "properties": {
+                    "id_marque": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "id_entreprise": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "id_users": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "nom": {
+                        "type": "string"
+                    },
+                    "entreprise": {
+                        "$ref": "#/components/schemas/Entreprise"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/User"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Categorie": {
+                "title": "Categorie",
+                "description": "Catégorie de produits",
+                "properties": {
+                    "id_categorie": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "id_entreprise": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "id_users": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name_cat": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "entreprise": {
+                        "$ref": "#/components/schemas/Entreprise"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/User"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "ConfigEntreprise": {
+                "title": "Configuration Entreprise",
+                "properties": {
+                    "id_config_entreprise": {
+                        "description": "Identifiant unique de la configuration",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "id_entreprise": {
+                        "description": "Entreprise liée",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "forfait": {
+                        "description": "Type de forfait",
+                        "type": "string"
+                    },
+                    "nbre_limit_personnel": {
+                        "description": "Nombre limite de personnel",
+                        "type": "string"
+                    },
+                    "actif": {
+                        "description": "Configuration active (0 ou 1)",
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Demande": {
+                "properties": {
+                    "id_demande": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "id_users": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "id_entreprise": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "date_demande": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "statut": {
+                        "type": "string"
+                    },
+                    "motif": {
+                        "type": "string"
+                    },
+                    "notes_gestionnaire": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "EntreesStock": {
+                "title": "Entrée de stock",
+                "required": [
+                    "id_entrees_stocks",
+                    "id_product",
+                    "quantite_entree",
+                    "date_reception"
+                ],
+                "properties": {
+                    "id_entrees_stocks": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "id_product": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "id_users": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "quantite_entree": {
+                        "type": "integer",
+                        "example": 20
+                    },
+                    "num_ordre": {
+                        "type": "string",
+                        "example": "ORD-001"
+                    },
+                    "fournisseur": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "date_reception": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Entreprise": {
+                "title": "Entreprise",
+                "description": "Informations sur une entreprise",
+                "properties": {
+                    "id_entreprise": {
+                        "description": "Identifiant unique de l'entreprise",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "company_name": {
+                        "description": "Nom de l'entreprise",
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "tax_number": {
+                        "description": "Numéro fiscal",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "address": {
+                        "description": "Adresse de l'entreprise",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "company_email": {
+                        "description": "Email de l'entreprise",
+                        "type": "string",
+                        "format": "email",
+                        "nullable": true
+                    },
+                    "logo": {
+                        "description": "Logo (URL ou chemin)",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "manager_name": {
+                        "description": "Nom du responsable",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "manager_email": {
+                        "description": "Email du responsable",
+                        "type": "string",
+                        "format": "email",
+                        "nullable": true
+                    },
+                    "manager_phone": {
+                        "description": "Téléphone du responsable",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "manager_nui": {
+                        "description": "NUI du responsable",
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "description": "Date de création",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "description": "Date de mise à jour",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Fournisseur": {
+                "title": "Fournisseur",
+                "description": "Fournisseur de produits",
+                "properties": {
+                    "id_fournisseur": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "id_entreprise": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "id_users": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "nom": {
+                        "type": "string"
+                    },
+                    "contact_nom": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "nullable": true
+                    },
+                    "telephone": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "adresse": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "ville": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "pays": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "actif": {
+                        "type": "boolean"
+                    },
+                    "notes": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "entreprise": {
+                        "$ref": "#/components/schemas/Entreprise"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/User"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "LigneDemande": {
+                "properties": {
+                    "id_ligne_demande": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "id_demande": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "id_product": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "quantite_demandee": {
+                        "type": "integer"
+                    },
+                    "quantite_validee": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "Pole": {
+                "required": [
+                    "id_pole",
+                    "nom"
+                ],
+                "properties": {
+                    "id_pole": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "nom": {
+                        "type": "string",
+                        "example": "Pôle Informatique"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Support IT et réseaux",
+                        "nullable": true
+                    },
+                    "users": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/User"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "Produit": {
+                "title": "Produit",
+                "description": "Produit géré par une entreprise",
+                "properties": {
+                    "id_product": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "id_entreprise": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "id_users": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "id_categorie": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "id_marque": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true
+                    },
+                    "id_fournisseur": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true
+                    },
+                    "nom": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "reference": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "prix": {
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "quantite_stock": {
+                        "type": "integer"
+                    },
+                    "quantite_min_alerte": {
+                        "type": "integer"
+                    },
+                    "categorie": {
+                        "$ref": "#/components/schemas/Categorie"
+                    },
+                    "marque": {
+                        "$ref": "#/components/schemas/Brand"
+                    },
+                    "fournisseur": {
+                        "$ref": "#/components/schemas/Fournisseur"
+                    },
+                    "entreprise": {
+                        "$ref": "#/components/schemas/Entreprise"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/User"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Profil": {
+                "title": "Profil",
+                "properties": {
+                    "id_profil": {
+                        "description": "Profile's unique identifier",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "nom": {
+                        "description": "Profile's name",
+                        "type": "string"
+                    },
+                    "description": {
+                        "description": "Profile's description",
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "description": "Creation timestamp",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "description": "Last update timestamp",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "SortieStock": {
+                "title": "Sortie de stock",
+                "description": "Mouvement de sortie de stock d’un produit",
+                "properties": {
+                    "id_sortie_stock": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "b3f6e8e4-9a7f-4f3c-bd12-1e8f98a56a11"
+                    },
+                    "id_product": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "c1f8b1a4-3c21-4d7b-9f88-41b0b6e12345"
+                    },
+                    "id_demande": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "d98c3c1e-29a5-4c1b-9f5e-3b6c5a1d9abc"
+                    },
+                    "id_users": {
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "a12b4567-c890-4d3a-9123-456789abcdef"
+                    },
+                    "quantite_sortie": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "destination": {
+                        "type": "string",
+                        "example": "Agence Nord"
+                    },
+                    "motif": {
+                        "type": "string",
+                        "example": "Dotation nouveau personnel"
+                    },
+                    "num_ordre": {
+                        "description": "Numéro d'ordre de la sortie",
+                        "type": "string",
+                        "example": "ORD-001"
+                    },
+                    "statut_direction": {
+                        "description": "Statut de validation par la direction",
+                        "type": "string",
+                        "example": "EN_ATTENTE"
+                    },
+                    "date_sortie": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-01-10T10:30:00Z"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-01-10T10:30:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-01-10T11:00:00Z"
+                    }
+                },
+                "type": "object"
+            },
+            "User": {
+                "title": "User",
+                "description": "Utilisateur du système",
+                "properties": {
+                    "id_users": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "id_entreprise": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "phone_number": {
+                        "type": "string"
+                    },
+                    "agence": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "poste": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "link_img": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "matricule": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "signature": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "entreprise": {
+                        "$ref": "#/components/schemas/Entreprise"
+                    },
+                    "profil": {
+                        "$ref": "#/components/schemas/Profil"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Brands",
+            "description": "API de gestion des marques"
+        },
+        {
+            "name": "Categories",
+            "description": "API de gestion des catégories de l'entreprise"
+        },
+        {
+            "name": "ConfigEntreprise",
+            "description": "Gestion des configurations d'entreprise"
+        },
+        {
+            "name": "Demandes",
+            "description": "Gestion des demandes de produits"
+        },
+        {
+            "name": "Entreprises",
+            "description": "Gestion administrative des entreprises"
+        },
+        {
+            "name": "Fournisseurs",
+            "description": "API de gestion des fournisseurs"
+        },
+        {
+            "name": "Products",
+            "description": "Gestion des produits et mouvements de stock"
+        },
+        {
+            "name": "Profiles",
+            "description": "API Endpoints for managing user profiles"
+        },
+        {
+            "name": "Authentication",
+            "description": "Authentication"
+        },
+        {
+            "name": "Poles",
+            "description": "Poles"
+        },
+        {
+            "name": "Sorties",
+            "description": "Sorties"
+        },
+        {
+            "name": "Stock Mouvements",
+            "description": "Stock Mouvements"
+        },
+        {
+            "name": "Users",
+            "description": "Users"
+        }
+    ]
+}

@@ -831,6 +831,321 @@
                 }
             }
         },
+        "/api/dashboard/sales-overview": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Vue d'ensemble des flux d'entrees/sorties",
+                "operationId": "f0fbf28e2a17b8e4d4ca8109f5f72aaa",
+                "parameters": [
+                    {
+                        "name": "period",
+                        "in": "query",
+                        "description": "Periode par defaut si from/to absent",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "day",
+                                "week",
+                                "month",
+                                "year"
+                            ],
+                            "example": "month"
+                        }
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2026-02-01"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2026-02-28"
+                        }
+                    },
+                    {
+                        "name": "group_by",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "day",
+                                "week",
+                                "month"
+                            ],
+                            "example": "day"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Donnees du graphique",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "labels": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": "01/02"
+                                            }
+                                        },
+                                        "series": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Entrees"
+                                                    },
+                                                    "data": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "integer",
+                                                            "example": 120
+                                                        }
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifie"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/dashboard/yearly-breakup": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Repartition annuelle",
+                "operationId": "a8021be23107dd4d2f5399135c85827a",
+                "parameters": [
+                    {
+                        "name": "year",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 2026
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Widget annuel",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "total_value": {
+                                            "type": "integer",
+                                            "example": 36358
+                                        },
+                                        "change_pct_vs_previous_year": {
+                                            "type": "integer",
+                                            "example": 9
+                                        },
+                                        "donut": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "integer",
+                                                "example": 38
+                                            }
+                                        },
+                                        "legend": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": "Entrees"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifie"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/dashboard/monthly-earnings": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Performance mensuelle",
+                "operationId": "58152a307658a288589f5c799746506c",
+                "parameters": [
+                    {
+                        "name": "month",
+                        "in": "query",
+                        "description": "Format YYYY-MM",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "2026-02"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Widget mensuel",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "value": {
+                                            "type": "integer",
+                                            "example": 6820
+                                        },
+                                        "change_pct_vs_previous_month": {
+                                            "type": "integer",
+                                            "example": 9
+                                        },
+                                        "sparkline": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "integer",
+                                                "example": 25
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifie"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/dashboard/recent-transactions": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Liste des transactions recentes",
+                "operationId": "17fb34d246be0d3cec9cc2dab4b9dd65",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 100,
+                            "minimum": 1,
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transactions",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "example": "TRX-001"
+                                            },
+                                            "date": {
+                                                "type": "string",
+                                                "format": "date-time",
+                                                "example": "2026-02-17T10:12:00Z"
+                                            },
+                                            "type": {
+                                                "type": "string",
+                                                "example": "SORTIE"
+                                            },
+                                            "title": {
+                                                "type": "string",
+                                                "example": "Sortie stock"
+                                            },
+                                            "subtitle": {
+                                                "type": "string",
+                                                "example": "PC Lenovo x2"
+                                            },
+                                            "url": {
+                                                "type": "string",
+                                                "example": "/products/global-history"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifie"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/demandes": {
             "get": {
                 "tags": [
@@ -3853,6 +4168,10 @@
         {
             "name": "ConfigEntreprise",
             "description": "Gestion des configurations d'entreprise"
+        },
+        {
+            "name": "Dashboard",
+            "description": "Indicateurs et widgets dashboard"
         },
         {
             "name": "Demandes",

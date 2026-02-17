@@ -7,6 +7,7 @@ use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategorieController;
 use App\Http\Controllers\ConfigEntrepriseController;
 use App\Http\Controllers\DemandeController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EntrepriseController;
 use App\Http\Controllers\FournisseurController;
 use App\Http\Controllers\PoleController;
@@ -108,6 +109,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/poles/{id}', [PoleController::class, 'show']);
     Route::put('/poles/{id}', [PoleController::class, 'update']);
     Route::delete('/poles/{id}', [PoleController::class, 'destroy']);
+
+    // Dashboard
+    Route::get('/dashboard/sales-overview', [DashboardController::class, 'salesOverview']);
+    Route::get('/dashboard/yearly-breakup', [DashboardController::class, 'yearlyBreakup']);
+    Route::get('/dashboard/monthly-earnings', [DashboardController::class, 'monthlyEarnings']);
+    Route::get('/dashboard/recent-transactions', [DashboardController::class, 'recentTransactions']);
 
 });
 

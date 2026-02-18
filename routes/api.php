@@ -121,6 +121,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/ordonances', [OrdonanceController::class, 'index']);
     Route::get('/ordonances/{id}', [OrdonanceController::class, 'show']);
     Route::post('/ordonances', [OrdonanceController::class, 'store']);
+    Route::put('/ordonances/{id}', [OrdonanceController::class, 'update']);
+    Route::patch('/ordonances/{id}', [OrdonanceController::class, 'update']);
+    Route::delete('/ordonances/{id}', [OrdonanceController::class, 'destroy']);
     Route::post('/ordonances/{id}/approve', [OrdonanceController::class, 'approve']);
 
 });

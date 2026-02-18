@@ -2035,6 +2035,373 @@
                 ]
             }
         },
+        "/api/ordonances": {
+            "get": {
+                "tags": [
+                    "Ordonances"
+                ],
+                "summary": "Lister les ordonances",
+                "operationId": "8d4c6f3185f4aa2b2c91ee0ccf877475",
+                "responses": {
+                    "200": {
+                        "description": "Liste des ordonances",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Ordonance"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifie"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Ordonances"
+                ],
+                "summary": "Enregistrer une ordonance (status pending)",
+                "operationId": "5bc6b9f2971add9ebfd8f747a3c4e40b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "compte_budgetaire",
+                                    "imputation_budgetaire",
+                                    "reference_op",
+                                    "date",
+                                    "creancier",
+                                    "montant_brut",
+                                    "nbre_pages_jointes"
+                                ],
+                                "properties": {
+                                    "compte_budgetaire": {
+                                        "type": "string",
+                                        "example": "601100"
+                                    },
+                                    "imputation_budgetaire": {
+                                        "type": "string",
+                                        "example": "IB-2026-01"
+                                    },
+                                    "reference_op": {
+                                        "type": "string",
+                                        "example": "OP-2026-0001"
+                                    },
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-02-18"
+                                    },
+                                    "creancier": {
+                                        "type": "string",
+                                        "example": "Fournisseur XYZ"
+                                    },
+                                    "montant_brut": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 150000
+                                    },
+                                    "acompte": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 20000
+                                    },
+                                    "ir": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 5000
+                                    },
+                                    "tva": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 19250
+                                    },
+                                    "nap": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 105750
+                                    },
+                                    "nbre_pages_jointes": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "observations": {
+                                        "type": "string",
+                                        "example": "Dossier complet"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Ordonance enregistree",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Ordonance"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifie"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/ordonances/{id}": {
+            "get": {
+                "tags": [
+                    "Ordonances"
+                ],
+                "summary": "Afficher une ordonance",
+                "operationId": "e7929da9aad1731efdd0f5f897293048",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ordonance trouvee",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Ordonance"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifie"
+                    },
+                    "404": {
+                        "description": "Ordonance introuvable"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Ordonances"
+                ],
+                "summary": "Corriger une ordonance (pending uniquement)",
+                "operationId": "893d4a9549b177f74e9b046089a5fdae",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "compte_budgetaire": {
+                                        "type": "string"
+                                    },
+                                    "imputation_budgetaire": {
+                                        "type": "string"
+                                    },
+                                    "reference_op": {
+                                        "type": "string"
+                                    },
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "creancier": {
+                                        "type": "string"
+                                    },
+                                    "montant_brut": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "acompte": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "ir": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "tva": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "nap": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "nbre_pages_jointes": {
+                                        "type": "integer"
+                                    },
+                                    "observations": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Ordonance corrigee",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Ordonance"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifie"
+                    },
+                    "404": {
+                        "description": "Ordonance introuvable"
+                    },
+                    "409": {
+                        "description": "Impossible car deja approuvee"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Ordonances"
+                ],
+                "summary": "Supprimer une ordonance (pending uniquement)",
+                "operationId": "59ce78b094d72ca6e769828e417828e9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Ordonance supprimee"
+                    },
+                    "401": {
+                        "description": "Non authentifie"
+                    },
+                    "404": {
+                        "description": "Ordonance introuvable"
+                    },
+                    "409": {
+                        "description": "Impossible car deja approuvee"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/ordonances/{id}/approve": {
+            "post": {
+                "tags": [
+                    "Ordonances"
+                ],
+                "summary": "Valider une ordonance (status approved)",
+                "operationId": "2471deeb1fa92fb5ab0b7776667fffd0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ordonance approuvee",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Ordonance"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifie"
+                    },
+                    "403": {
+                        "description": "Acces refuse"
+                    },
+                    "404": {
+                        "description": "Ordonance introuvable"
+                    },
+                    "409": {
+                        "description": "Conflit de statut"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/poles": {
             "get": {
                 "tags": [
@@ -3891,6 +4258,89 @@
                 },
                 "type": "object"
             },
+            "Ordonance": {
+                "title": "Ordonance",
+                "properties": {
+                    "id_ordonance": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "id_entreprise": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "id_users": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "compte_budgetaire": {
+                        "type": "string"
+                    },
+                    "imputation_budgetaire": {
+                        "type": "string"
+                    },
+                    "reference_op": {
+                        "type": "string"
+                    },
+                    "date": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "creancier": {
+                        "type": "string"
+                    },
+                    "montant_brut": {
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "acompte": {
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "ir": {
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "tva": {
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "nap": {
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "nbre_pages_jointes": {
+                        "type": "integer"
+                    },
+                    "observations": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "pending"
+                    },
+                    "approved_by": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true
+                    },
+                    "approved_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
             "Pole": {
                 "required": [
                     "id_pole",
@@ -4184,6 +4634,10 @@
         {
             "name": "Fournisseurs",
             "description": "API de gestion des fournisseurs"
+        },
+        {
+            "name": "Ordonances",
+            "description": "Gestion des ordonances de paiement"
         },
         {
             "name": "Products",

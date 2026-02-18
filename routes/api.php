@@ -14,6 +14,7 @@ use App\Http\Controllers\PoleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\OrdonanceController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -115,6 +116,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dashboard/yearly-breakup', [DashboardController::class, 'yearlyBreakup']);
     Route::get('/dashboard/monthly-earnings', [DashboardController::class, 'monthlyEarnings']);
     Route::get('/dashboard/recent-transactions', [DashboardController::class, 'recentTransactions']);
+
+    // Ordonances de paiement
+    Route::get('/ordonances', [OrdonanceController::class, 'index']);
+    Route::get('/ordonances/{id}', [OrdonanceController::class, 'show']);
+    Route::post('/ordonances', [OrdonanceController::class, 'store']);
+    Route::post('/ordonances/{id}/approve', [OrdonanceController::class, 'approve']);
 
 });
 

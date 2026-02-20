@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\EntreesStock;
 use App\Models\SortieStock;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -69,7 +70,7 @@ class ProductController extends Controller
      * @OA\Post(
      * path="/api/products",
      * tags={"Products"},
-     * summary="Créer un produit (Admin)",
+     * summary="Créer un produit ou alimenter un existant (Admin)",
      * security={{"sanctum":{}}},
      * @OA\RequestBody(
      * required=true,
@@ -81,7 +82,16 @@ class ProductController extends Controller
      * @OA\Property(property="prix", type="float", example=10.5),
      * @OA\Property(property="quantite_min_alerte", type="integer", example=2),
      * @OA\Property(property="reference", type="string", example="REF-001"),
-     * @OA\Property(property="agence", type="string", example="Siège")
+     * @OA\Property(property="agence", type="string", example="Siège"),
+     * @OA\Property(
+     *     property="on_existing",
+     *     type="string",
+     *     enum={"reject","increment","replace"},
+     *     example="increment",
+     *     description="Comportement si produit existant: reject=409, increment=ajout stock, replace=maj complète"
+     * ),
+     * @OA\Property(property="date_reception", type="string", format="date", example="2026-02-20"),
+     * @OA\Property(property="num_ordre", type="string", example="ORD-2026-002")
      * )
      * ),
      * @OA\Response(
@@ -89,6 +99,16 @@ class ProductController extends Controller
      * description="Produit créé",
      * @OA\JsonContent(ref="#/components/schemas/Product")
      * ),
+     * @OA\Response(
+     * response=200,
+     * description="Produit existant mis à jour/stock incrémenté",
+     * @OA\JsonContent(
+     * type="object",
+     * @OA\Property(property="message", type="string", example="Stock ajouté sur produit existant"),
+     * @OA\Property(property="product", ref="#/components/schemas/Product")
+     * )
+     * ),
+     * @OA\Response(response=409, description="Produit existant et on_existing=reject"),
      * @OA\Response(response=403, description="Accès refusé"),
      * @OA\Response(response=422, description="Erreur de validation")
      * )
@@ -111,13 +131,314 @@ class ProductController extends Controller
             'id_fournisseur'              => 'nullable|string|max:255',
             'id_categorie'              => 'nullable|string|max:255',
             'id_marque'              => 'nullable|string|max:255',
+            'on_existing'         => 'nullable|in:reject,increment,replace',
+            'date_reception'      => 'nullable|date',
+            'num_ordre'           => 'nullable|string|max:255',
         ]);
+
+        $existingMode = $data['on_existing'] ?? 'reject';
+        unset($data['on_existing']);
+
+        $existing = $this->findExistingProduct($request->user()->id_entreprise, $data['reference'] ?? null, $data['nom'] ?? null);
+        if ($existing) {
+            if ($existingMode === 'reject') {
+                return response()->json([
+                    'message' => 'Produit existant. Utilisez on_existing=increment ou on_existing=replace',
+                    'product_id' => $existing->id_product,
+                ], 409);
+            }
+
+            if ($existingMode === 'replace') {
+                $existing->update([
+                    'id_categorie' => $data['id_categorie'] ?? $existing->id_categorie,
+                    'id_marque' => $data['id_marque'] ?? $existing->id_marque,
+                    'id_fournisseur' => $data['id_fournisseur'] ?? $existing->id_fournisseur,
+                    'nom' => $data['nom'] ?? $existing->nom,
+                    'description' => array_key_exists('description', $data) ? $data['description'] : $existing->description,
+                    'reference' => array_key_exists('reference', $data) ? $data['reference'] : $existing->reference,
+                    'quantite_stock' => (int) $data['quantite_stock'],
+                    'prix' => array_key_exists('prix', $data) ? (float) $data['prix'] : $existing->prix,
+                    'quantite_min_alerte' => array_key_exists('quantite_min_alerte', $data) ? (int) $data['quantite_min_alerte'] : $existing->quantite_min_alerte,
+                    'agence' => array_key_exists('agence', $data) ? $data['agence'] : $existing->agence,
+                ]);
+
+                return response()->json([
+                    'message' => 'Produit existant mis à jour (mode replace)',
+                    'product' => $existing->fresh(),
+                ]);
+            }
+
+            $qty = (int) $data['quantite_stock'];
+            if ($qty <= 0) {
+                return response()->json([
+                    'message' => 'quantite_stock doit être > 0 en mode increment',
+                ], 422);
+            }
+
+            DB::transaction(function () use ($existing, $request, $data, $qty) {
+                $existing->increment('quantite_stock', $qty);
+
+                EntreesStock::create([
+                    'id_entrees_stocks' => (string) Str::uuid(),
+                    'id_product' => $existing->id_product,
+                    'id_users' => $request->user()->id_users,
+                    'num_ordre' => $data['num_ordre'] ?? null,
+                    'quantite_entree' => $qty,
+                    'fournisseur' => $data['id_fournisseur'] ?? null,
+                    'date_reception' => $data['date_reception'] ?? now()->toDateString(),
+                ]);
+
+                $existing->update([
+                    'prix' => array_key_exists('prix', $data) ? (float) $data['prix'] : $existing->prix,
+                    'quantite_min_alerte' => array_key_exists('quantite_min_alerte', $data) ? (int) $data['quantite_min_alerte'] : $existing->quantite_min_alerte,
+                    'description' => array_key_exists('description', $data) ? $data['description'] : $existing->description,
+                    'agence' => array_key_exists('agence', $data) ? $data['agence'] : $existing->agence,
+                    'id_marque' => $data['id_marque'] ?? $existing->id_marque,
+                    'id_fournisseur' => $data['id_fournisseur'] ?? $existing->id_fournisseur,
+                    'id_categorie' => $data['id_categorie'] ?? $existing->id_categorie,
+                ]);
+            });
+
+            return response()->json([
+                'message' => 'Stock ajouté sur produit existant',
+                'product' => $existing->fresh(),
+            ]);
+        }
 
         $data['id_product']    = (string) Str::uuid();
         $data['id_entreprise'] = $request->user()->id_entreprise;
         $data['id_users']      = $request->user()->id_users;
+        unset($data['date_reception'], $data['num_ordre']);
 
         return response()->json(Product::create($data), 201);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/products/import-csv",
+     *     tags={"Products"},
+     *     summary="Importer des produits depuis un fichier CSV",
+     *     description="Importe des produits via un fichier CSV (admin uniquement).",
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         content={
+     *             @OA\MediaType(
+     *                 mediaType="multipart/form-data",
+     *                 @OA\Schema(
+     *                     required={"file"},
+     *                     @OA\Property(
+     *                         property="file",
+     *                         type="string",
+     *                         format="binary",
+     *                         description="Fichier CSV a importer"
+     *                     ),
+     *                     @OA\Property(
+     *                         property="on_existing",
+     *                         type="string",
+     *                         enum={"replace","increment"},
+     *                         example="increment",
+     *                         description="Comportement si le produit existe déjà"
+     *                     )
+     *                 )
+     *             )
+     *         }
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Import termine",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Import CSV termine"),
+     *             @OA\Property(
+     *                 property="summary",
+     *                 type="object",
+     *                 @OA\Property(property="created", type="integer", example=12),
+     *                 @OA\Property(property="updated", type="integer", example=3),
+     *                 @OA\Property(
+     *                     property="headers_detected",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="id_product")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Non authentifie"),
+     *     @OA\Response(response=403, description="Acces refuse"),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Erreur de validation",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Erreurs de validation dans le fichier CSV"),
+     *             @OA\Property(property="errors", type="array", @OA\Items(type="object"))
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Erreur interne pendant l'import")
+     * )
+     *
+     * Import CSV de produits.
+     * Colonnes attendues (entetes): nom, id_categorie.
+     * Colonnes utiles:
+     * - id_product (PK produit, UUID)
+     * - description, reference, quantite_stock, prix, quantite_min_alerte,
+     *   agence, id_fournisseur, id_marque, is_direction
+     */
+    public function importCsv(Request $request)
+    {
+        if (!$this->isAdmin()) {
+            return response()->json(['message' => 'Acces refuse'], 403);
+        }
+
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt',
+            'on_existing' => 'nullable|in:replace,increment',
+        ]);
+        $onExisting = $request->input('on_existing', 'replace');
+
+        $file = $request->file('file');
+        [$rows, $headerMap] = $this->parseCsvFile($file);
+
+        if (empty($rows)) {
+            return response()->json([
+                'message' => 'Le fichier CSV est vide',
+            ], 422);
+        }
+
+        $entrepriseId = $request->user()->id_entreprise;
+        $userId = $request->user()->id_users;
+
+        $created = 0;
+        $updated = 0;
+        $errors = [];
+
+        DB::beginTransaction();
+        try {
+            foreach ($rows as $line => $row) {
+                $validator = validator($row, [
+                    'nom' => 'required|string|max:255',
+                    'id_categorie' => 'required|uuid|exists:categories,id_categorie',
+                    'id_marque' => 'nullable|uuid|exists:brands,id_marque',
+                    'id_fournisseur' => 'nullable|uuid|exists:fournisseurs,id_fournisseur',
+                    'reference' => 'nullable|string|max:255',
+                    'description' => 'nullable|string',
+                    'quantite_stock' => 'nullable|integer|min:0',
+                    'prix' => 'nullable|numeric|min:0',
+                    'quantite_min_alerte' => 'nullable|integer|min:0',
+                    'agence' => 'nullable|string|max:255',
+                    'is_direction' => 'nullable',
+                    'id_product' => 'nullable|uuid',
+                ]);
+
+                if ($validator->fails()) {
+                    $errors[] = [
+                        'line' => $line,
+                        'errors' => $validator->errors(),
+                    ];
+                    continue;
+                }
+
+                $rawIdProduct = trim((string) ($row['id_product'] ?? ''));
+
+                $payload = [
+                    'id_entreprise' => $entrepriseId,
+                    'id_users' => $userId,
+                    'id_categorie' => $row['id_categorie'],
+                    'id_marque' => $row['id_marque'] ?: null,
+                    'id_fournisseur' => $row['id_fournisseur'] ?: null,
+                    'nom' => $row['nom'],
+                    'description' => $row['description'] ?: null,
+                    'reference' => $row['reference'] ?: null,
+                    'quantite_stock' => (int) ($row['quantite_stock'] ?: 0),
+                    'prix' => (float) ($row['prix'] ?: 0),
+                    'quantite_min_alerte' => (int) ($row['quantite_min_alerte'] ?: 0),
+                    'is_direction' => $this->toBool($row['is_direction'] ?? false),
+                    'agence' => $row['agence'] ?: null,
+                ];
+
+                $product = null;
+                if ($rawIdProduct !== '' && Str::isUuid($rawIdProduct)) {
+                    $product = Product::where('id_entreprise', $entrepriseId)
+                        ->where('id_product', $rawIdProduct)
+                        ->first();
+                }
+
+                if (!$product) {
+                    $product = $this->findExistingProduct($entrepriseId, $payload['reference'] ?? null, $payload['nom'] ?? null);
+                }
+
+                if ($product) {
+                    if ($onExisting === 'increment') {
+                        $qty = (int) $payload['quantite_stock'];
+                        if ($qty > 0) {
+                            $product->increment('quantite_stock', $qty);
+
+                            EntreesStock::create([
+                                'id_entrees_stocks' => (string) Str::uuid(),
+                                'id_product' => $product->id_product,
+                                'id_users' => $userId,
+                                'num_ordre' => null,
+                                'quantite_entree' => $qty,
+                                'fournisseur' => $payload['id_fournisseur'],
+                                'date_reception' => now()->toDateString(),
+                            ]);
+                        }
+
+                        $product->update([
+                            'prix' => $payload['prix'],
+                            'quantite_min_alerte' => $payload['quantite_min_alerte'],
+                            'description' => $payload['description'],
+                            'agence' => $payload['agence'],
+                            'id_marque' => $payload['id_marque'],
+                            'id_fournisseur' => $payload['id_fournisseur'],
+                            'id_categorie' => $payload['id_categorie'],
+                        ]);
+                    } else {
+                        $product->update($payload);
+                    }
+                    $updated++;
+                } else {
+                    $productId = null;
+                    if ($rawIdProduct !== '' && Str::isUuid($rawIdProduct)) {
+                        $alreadyUsed = Product::where('id_product', $rawIdProduct)->exists();
+                        $productId = $alreadyUsed ? (string) Str::uuid() : $rawIdProduct;
+                    } else {
+                        $productId = (string) Str::uuid();
+                    }
+
+                    $product = Product::create(array_merge($payload, [
+                        'id_product' => $productId,
+                    ]));
+                    $created++;
+                }
+            }
+
+            if (!empty($errors)) {
+                DB::rollBack();
+                return response()->json([
+                    'message' => 'Erreurs de validation dans le fichier CSV',
+                    'errors' => $errors,
+                ], 422);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Import CSV termine',
+                'summary' => [
+                    'created' => $created,
+                    'updated' => $updated,
+                    'headers_detected' => $headerMap,
+                ],
+            ], 201);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => "Erreur pendant l'import CSV",
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -719,5 +1040,130 @@ class ProductController extends Controller
             ->get();
 
         return response()->json($exits);
+    }
+
+    private function parseCsvFile(UploadedFile $file): array
+    {
+        $path = $file->getRealPath();
+        $handle = fopen($path, 'r');
+        if ($handle === false) {
+            throw new \RuntimeException("Impossible d'ouvrir le fichier CSV");
+        }
+
+        $firstLine = fgets($handle);
+        rewind($handle);
+        $delimiter = $this->detectDelimiter($firstLine ?: '');
+
+        $rawHeaders = fgetcsv($handle, 0, $delimiter);
+        if (!$rawHeaders) {
+            fclose($handle);
+            return [[], []];
+        }
+
+        $headers = array_map(fn ($h) => $this->normalizeHeader((string) $h), $rawHeaders);
+        $headerMap = [];
+        foreach ($headers as $h) {
+            $headerMap[] = $h;
+        }
+
+        $rows = [];
+        $line = 1;
+        while (($data = fgetcsv($handle, 0, $delimiter)) !== false) {
+            $line++;
+            if (count(array_filter($data, fn ($v) => trim((string) $v) !== '')) === 0) {
+                continue;
+            }
+
+            $assoc = [];
+            foreach ($headers as $idx => $header) {
+                if ($header === '') {
+                    continue;
+                }
+                $assoc[$header] = isset($data[$idx]) ? trim((string) $data[$idx]) : null;
+            }
+
+            $mapped = [
+                'id_product' => $assoc['id_product'] ?? null,
+                'nom' => $assoc['nom'] ?? $assoc['name'] ?? null,
+                'description' => $assoc['description'] ?? null,
+                'reference' => $assoc['reference'] ?? null,
+                'id_categorie' => $assoc['id_categorie'] ?? $assoc['categorie_id'] ?? null,
+                'id_marque' => $assoc['id_marque'] ?? $assoc['marque_id'] ?? null,
+                'id_fournisseur' => $assoc['id_fournisseur'] ?? $assoc['fournisseur_id'] ?? null,
+                'quantite_stock' => $assoc['quantite_stock'] ?? $assoc['stock'] ?? null,
+                'prix' => $assoc['prix'] ?? $assoc['price'] ?? null,
+                'quantite_min_alerte' => $assoc['quantite_min_alerte'] ?? $assoc['quantite_min'] ?? null,
+                'is_direction' => $assoc['is_direction'] ?? null,
+                'agence' => $assoc['agence'] ?? null,
+            ];
+
+            $rows[$line] = $mapped;
+        }
+
+        fclose($handle);
+
+        return [$rows, $headerMap];
+    }
+
+    private function detectDelimiter(string $sample): string
+    {
+        $delimiters = [',', ';', "\t", '|'];
+        $maxCount = -1;
+        $best = ',';
+
+        foreach ($delimiters as $delimiter) {
+            $count = count(str_getcsv($sample, $delimiter));
+            if ($count > $maxCount) {
+                $maxCount = $count;
+                $best = $delimiter;
+            }
+        }
+
+        return $best;
+    }
+
+    private function normalizeHeader(string $header): string
+    {
+        $header = mb_strtolower(trim($header));
+        $header = str_replace(["\n", "\r", "\t"], ' ', $header);
+        $header = preg_replace('/\s+/', '_', $header);
+
+        $map = [
+            'compte_budgetaire' => 'compte_budgetaire',
+            'imputation_budgetaire' => 'imputation_budgetaire',
+            'reference_op' => 'reference_op',
+        ];
+
+        return $map[$header] ?? $header;
+    }
+
+    private function toBool(mixed $value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        $normalized = mb_strtolower(trim((string) $value));
+        return in_array($normalized, ['1', 'true', 'yes', 'oui', 'y'], true);
+    }
+
+    private function findExistingProduct(string $entrepriseId, ?string $reference, ?string $nom): ?Product
+    {
+        if (!empty($reference)) {
+            $product = Product::where('id_entreprise', $entrepriseId)
+                ->where('reference', $reference)
+                ->first();
+            if ($product) {
+                return $product;
+            }
+        }
+
+        if (!empty($nom)) {
+            return Product::where('id_entreprise', $entrepriseId)
+                ->where('nom', $nom)
+                ->first();
+        }
+
+        return null;
     }
 }

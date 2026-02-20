@@ -90,7 +90,6 @@ class Product extends Model
         'is_direction' => 'boolean',
         'prix' => 'float',
     ];
-    
 
     public function categorie()
     {

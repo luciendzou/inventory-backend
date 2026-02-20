@@ -2671,7 +2671,7 @@
                 "tags": [
                     "Products"
                 ],
-                "summary": "Créer un produit (Admin)",
+                "summary": "Créer un produit ou alimenter un existant (Admin)",
                 "operationId": "e8185e307706e2cd84bbcf5171e2f09d",
                 "requestBody": {
                     "required": true,
@@ -2712,6 +2712,25 @@
                                     "agence": {
                                         "type": "string",
                                         "example": "Siège"
+                                    },
+                                    "on_existing": {
+                                        "description": "Comportement si produit existant: reject=409, increment=ajout stock, replace=maj complète",
+                                        "type": "string",
+                                        "enum": [
+                                            "reject",
+                                            "increment",
+                                            "replace"
+                                        ],
+                                        "example": "increment"
+                                    },
+                                    "date_reception": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-02-20"
+                                    },
+                                    "num_ordre": {
+                                        "type": "string",
+                                        "example": "ORD-2026-002"
                                     }
                                 },
                                 "type": "object"
@@ -2730,11 +2749,146 @@
                             }
                         }
                     },
+                    "200": {
+                        "description": "Produit existant mis à jour/stock incrémenté",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Stock ajouté sur produit existant"
+                                        },
+                                        "product": {
+                                            "$ref": "#/components/schemas/Product"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Produit existant et on_existing=reject"
+                    },
                     "403": {
                         "description": "Accès refusé"
                     },
                     "422": {
                         "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/products/import-csv": {
+            "post": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Importer des produits depuis un fichier CSV",
+                "description": "Importe des produits via un fichier CSV (admin uniquement).",
+                "operationId": "6bc5a8cd8fc19c68b2f489050292f697",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "file"
+                                ],
+                                "properties": {
+                                    "file": {
+                                        "description": "Fichier CSV a importer",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "on_existing": {
+                                        "description": "Comportement si le produit existe déjà",
+                                        "type": "string",
+                                        "enum": [
+                                            "replace",
+                                            "increment"
+                                        ],
+                                        "example": "increment"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Import termine",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Import CSV termine"
+                                        },
+                                        "summary": {
+                                            "properties": {
+                                                "created": {
+                                                    "type": "integer",
+                                                    "example": 12
+                                                },
+                                                "updated": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "headers_detected": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "id_product"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non authentifie"
+                    },
+                    "403": {
+                        "description": "Acces refuse"
+                    },
+                    "422": {
+                        "description": "Erreur de validation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Erreurs de validation dans le fichier CSV"
+                                        },
+                                        "errors": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne pendant l'import"
                     }
                 },
                 "security": [

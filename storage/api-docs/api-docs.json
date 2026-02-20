@@ -2705,6 +2705,10 @@
                                         "type": "integer",
                                         "example": 2
                                     },
+                                    "conditionnement": {
+                                        "type": "string",
+                                        "example": "carton"
+                                    },
                                     "reference": {
                                         "type": "string",
                                         "example": "REF-001"
@@ -2968,6 +2972,9 @@
                                     },
                                     "quantite_min_alerte": {
                                         "type": "integer"
+                                    },
+                                    "conditionnement": {
+                                        "type": "string"
                                     },
                                     "prix": {
                                         "type": "number",
@@ -4573,6 +4580,11 @@
                     },
                     "quantite_min_alerte": {
                         "type": "integer"
+                    },
+                    "conditionnement": {
+                        "type": "string",
+                        "example": "carton",
+                        "nullable": true
                     },
                     "categorie": {
                         "$ref": "#/components/schemas/Categorie"

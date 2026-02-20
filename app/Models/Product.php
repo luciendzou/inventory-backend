@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Model;
  *     @OA\Property(property="prix", type="float"),
  *     @OA\Property(property="quantite_stock", type="integer"),
  *     @OA\Property(property="quantite_min_alerte", type="integer"),
+ *     @OA\Property(property="conditionnement", type="string", nullable=true, example="carton"),
  *
  *     @OA\Property(
  *         property="categorie",
@@ -80,6 +81,7 @@ class Product extends Model
         'quantite_stock',
         'prix',
         'quantite_min_alerte',
+        'conditionnement',
         'is_direction',
         'agence',
     ];

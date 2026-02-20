@@ -81,6 +81,7 @@ class ProductController extends Controller
      * @OA\Property(property="quantite_stock", type="integer", example=10),
      * @OA\Property(property="prix", type="float", example=10.5),
      * @OA\Property(property="quantite_min_alerte", type="integer", example=2),
+     * @OA\Property(property="conditionnement", type="string", example="carton"),
      * @OA\Property(property="reference", type="string", example="REF-001"),
      * @OA\Property(property="agence", type="string", example="Siège"),
      * @OA\Property(
@@ -126,6 +127,7 @@ class ProductController extends Controller
             'quantite_stock'      => 'required|integer|min:0',
             'prix'                => 'nullable|numeric',
             'quantite_min_alerte' => 'required|integer|min:0',
+            'conditionnement'     => 'nullable|string|max:50',
             'reference'           => 'nullable|string|max:255',
             'agence'              => 'nullable|string|max:255',
             'id_fournisseur'              => 'nullable|string|max:255',
@@ -159,6 +161,7 @@ class ProductController extends Controller
                     'quantite_stock' => (int) $data['quantite_stock'],
                     'prix' => array_key_exists('prix', $data) ? (float) $data['prix'] : $existing->prix,
                     'quantite_min_alerte' => array_key_exists('quantite_min_alerte', $data) ? (int) $data['quantite_min_alerte'] : $existing->quantite_min_alerte,
+                    'conditionnement' => array_key_exists('conditionnement', $data) ? $data['conditionnement'] : $existing->conditionnement,
                     'agence' => array_key_exists('agence', $data) ? $data['agence'] : $existing->agence,
                 ]);
 
@@ -191,6 +194,7 @@ class ProductController extends Controller
                 $existing->update([
                     'prix' => array_key_exists('prix', $data) ? (float) $data['prix'] : $existing->prix,
                     'quantite_min_alerte' => array_key_exists('quantite_min_alerte', $data) ? (int) $data['quantite_min_alerte'] : $existing->quantite_min_alerte,
+                    'conditionnement' => array_key_exists('conditionnement', $data) ? $data['conditionnement'] : $existing->conditionnement,
                     'description' => array_key_exists('description', $data) ? $data['description'] : $existing->description,
                     'agence' => array_key_exists('agence', $data) ? $data['agence'] : $existing->agence,
                     'id_marque' => $data['id_marque'] ?? $existing->id_marque,
@@ -281,7 +285,7 @@ class ProductController extends Controller
      * Colonnes attendues (entetes): nom, id_categorie.
      * Colonnes utiles:
      * - id_product (PK produit, UUID)
-     * - description, reference, quantite_stock, prix, quantite_min_alerte,
+     * - description, reference, quantite_stock, prix, quantite_min_alerte, conditionnement,
      *   agence, id_fournisseur, id_marque, is_direction
      */
     public function importCsv(Request $request)
@@ -325,6 +329,7 @@ class ProductController extends Controller
                     'quantite_stock' => 'nullable|integer|min:0',
                     'prix' => 'nullable|numeric|min:0',
                     'quantite_min_alerte' => 'nullable|integer|min:0',
+                    'conditionnement' => 'nullable|string|max:50',
                     'agence' => 'nullable|string|max:255',
                     'is_direction' => 'nullable',
                     'id_product' => 'nullable|uuid',
@@ -352,6 +357,7 @@ class ProductController extends Controller
                     'quantite_stock' => (int) ($row['quantite_stock'] ?: 0),
                     'prix' => (float) ($row['prix'] ?: 0),
                     'quantite_min_alerte' => (int) ($row['quantite_min_alerte'] ?: 0),
+                    'conditionnement' => $row['conditionnement'] ?: null,
                     'is_direction' => $this->toBool($row['is_direction'] ?? false),
                     'agence' => $row['agence'] ?: null,
                 ];
@@ -387,6 +393,7 @@ class ProductController extends Controller
                         $product->update([
                             'prix' => $payload['prix'],
                             'quantite_min_alerte' => $payload['quantite_min_alerte'],
+                            'conditionnement' => $payload['conditionnement'],
                             'description' => $payload['description'],
                             'agence' => $payload['agence'],
                             'id_marque' => $payload['id_marque'],
@@ -486,6 +493,7 @@ class ProductController extends Controller
      * @OA\Property(property="nom", type="string"),
      * @OA\Property(property="description", type="string"),
      * @OA\Property(property="quantite_min_alerte", type="integer"),
+     * @OA\Property(property="conditionnement", type="string"),
      * @OA\Property(property="prix", type="float"),
      * @OA\Property(property="reference", type="string"),
      * @OA\Property(property="agence", type="string")
@@ -520,6 +528,7 @@ class ProductController extends Controller
             'nom'                 => 'sometimes|required|string|max:255',
             'description'         => 'nullable|string',
             'quantite_min_alerte' => 'sometimes|required|integer|min:0',
+            'conditionnement'     => 'nullable|string|max:50',
             'prix'                => 'nullable|float',
             'reference'           => 'nullable|string|max:255',
             'agence'              => 'nullable|string|max:255',
@@ -1093,6 +1102,7 @@ class ProductController extends Controller
                 'quantite_stock' => $assoc['quantite_stock'] ?? $assoc['stock'] ?? null,
                 'prix' => $assoc['prix'] ?? $assoc['price'] ?? null,
                 'quantite_min_alerte' => $assoc['quantite_min_alerte'] ?? $assoc['quantite_min'] ?? null,
+                'conditionnement' => $assoc['conditionnement'] ?? $assoc['packaging'] ?? null,
                 'is_direction' => $assoc['is_direction'] ?? null,
                 'agence' => $assoc['agence'] ?? null,
             ];

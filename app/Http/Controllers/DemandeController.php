@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Demande;
 use App\Models\LigneDemande;
 use App\Models\SortieStock;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -116,6 +117,18 @@ class DemandeController extends Controller
                 'quantite_demandee' => $ligne['quantite_demandee'],
             ]);
         }
+
+        app(NotificationService::class)->sendToRoleInEntreprise(
+            $user->id_entreprise,
+            'Admin',
+            'DEMANDE_CREEE',
+            'Nouvelle demande',
+            "Une nouvelle demande a ete creee par {$user->name}",
+            [
+                'id_demande' => $demande->id_demande,
+                'id_users' => $user->id_users,
+            ]
+        );
 
         return response()->json(
             $demande->load('lignes.product', 'user'),
@@ -289,6 +302,15 @@ class DemandeController extends Controller
             ]);
         }
 
+        app(NotificationService::class)->sendToUser(
+            $demande->id_users,
+            $user->id_entreprise,
+            'DEMANDE_VALIDEE',
+            'Demande validee',
+            "Votre demande {$demande->id_demande} a ete validee",
+            ['id_demande' => $demande->id_demande]
+        );
+
         return response()->json([
             'message' => 'Demande validée, sorties créées',
         ]);
@@ -371,6 +393,15 @@ class DemandeController extends Controller
         $demande->update([
             'statut' => 'REFUSEE',
         ]);
+
+        app(NotificationService::class)->sendToUser(
+            $demande->id_users,
+            $user->id_entreprise,
+            'DEMANDE_REFUSEE',
+            'Demande refusee',
+            "Votre demande {$demande->id_demande} a ete refusee",
+            ['id_demande' => $demande->id_demande]
+        );
 
         return response()->json([
             'message' => 'Demande refusée',

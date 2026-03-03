@@ -4495,6 +4495,55 @@
                 },
                 "type": "object"
             },
+            "Notification": {
+                "properties": {
+                    "id_notification": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "id_users": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "id_entreprise": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "DEMANDE_VALIDEE"
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Demande validee"
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Votre demande a ete validee"
+                    },
+                    "data": {
+                        "type": "object"
+                    },
+                    "is_read": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "read_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
             "Ordonance": {
                 "title": "Ordonance",
                 "properties": {

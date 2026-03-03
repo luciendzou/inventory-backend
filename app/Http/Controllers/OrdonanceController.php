@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ordonance;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -150,6 +151,15 @@ class OrdonanceController extends Controller
             'approved_by' => null,
             'approved_at' => null,
         ]);
+
+        app(NotificationService::class)->sendToRoleInEntreprise(
+            $request->user()->id_entreprise,
+            'Admin',
+            'ORDONANCE_CREEE',
+            'Nouvelle ordonance',
+            "Une nouvelle ordonance {$ordonance->reference_op} est en attente",
+            ['id_ordonance' => $ordonance->id_ordonance]
+        );
 
         return response()->json($ordonance, 201);
     }
@@ -326,6 +336,15 @@ class OrdonanceController extends Controller
             'approved_by' => $request->user()->id_users,
             'approved_at' => now(),
         ]);
+
+        app(NotificationService::class)->sendToUser(
+            $ordonance->id_users,
+            $request->user()->id_entreprise,
+            'ORDONANCE_APPROUVEE',
+            'Ordonance approuvee',
+            "Votre ordonance {$ordonance->reference_op} a ete approuvee",
+            ['id_ordonance' => $ordonance->id_ordonance]
+        );
 
         return response()->json($ordonance);
     }

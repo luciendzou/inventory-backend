@@ -104,4 +104,9 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Pole::class, 'id_pole', 'id_pole');
     }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class, 'id_users', 'id_users');
+    }
 }

@@ -6,6 +6,7 @@ use App\Models\Demande;
 use App\Models\Product;
 use App\Models\EntreesStock;
 use App\Models\SortieStock;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
@@ -1049,6 +1050,112 @@ class ProductController extends Controller
             ->get();
 
         return response()->json($exits);
+    }
+
+    /**
+     * @OA\Post(
+     * path="/api/stock/year-rollover",
+     * tags={"Stock Mouvements"},
+     * summary="Basculer le stock de fin d'annee vers la nouvelle annee",
+     * description="Cree (ou met a jour) une entree d'ouverture au 1er janvier pour chaque produit avec le stock courant.",
+     * security={{"sanctum":{}}},
+     * @OA\RequestBody(
+     * required=false,
+     * @OA\JsonContent(
+     * @OA\Property(property="year", type="integer", example=2027, description="Annee cible (par defaut: annee courante)")
+     * )
+     * ),
+     * @OA\Response(
+     * response=200,
+     * description="Bascule terminee",
+     * @OA\JsonContent(
+     * type="object",
+     * @OA\Property(property="message", type="string", example="Bascule de stock effectuee"),
+     * @OA\Property(property="year", type="integer", example=2027),
+     * @OA\Property(property="opening_date", type="string", example="2027-01-01"),
+     * @OA\Property(property="created_entries", type="integer", example=25),
+     * @OA\Property(property="updated_entries", type="integer", example=3),
+     * @OA\Property(property="total_products", type="integer", example=40)
+     * )
+     * ),
+     * @OA\Response(response=403, description="Acces refuse"),
+     * @OA\Response(response=422, description="Erreur de validation")
+     * )
+     */
+    public function yearRollover(Request $request)
+    {
+        if (!$this->isAdmin()) {
+            return response()->json(['message' => 'Acces refuse'], 403);
+        }
+
+        $data = $request->validate([
+            'year' => 'nullable|integer|min:2000|max:2100',
+        ]);
+
+        $year = (int) ($data['year'] ?? now()->year);
+        $openingDate = Carbon::create($year, 1, 1)->toDateString();
+        $numOrdre = 'OUVERTURE-' . $year;
+        $entrepriseId = $request->user()->id_entreprise;
+        $userId = $request->user()->id_users;
+
+        $created = 0;
+        $updated = 0;
+
+        DB::transaction(function () use (
+            $entrepriseId,
+            $userId,
+            $openingDate,
+            $numOrdre,
+            &$created,
+            &$updated
+        ) {
+            $products = Product::where('id_entreprise', $entrepriseId)->get();
+
+            foreach ($products as $product) {
+                $qty = (int) $product->quantite_stock;
+                if ($qty <= 0) {
+                    continue;
+                }
+
+                $existingOpening = EntreesStock::where('id_product', $product->id_product)
+                    ->where('num_ordre', $numOrdre)
+                    ->whereDate('date_reception', $openingDate)
+                    ->first();
+
+                if ($existingOpening) {
+                    $existingOpening->update([
+                        'id_users' => $userId,
+                        'quantite_entree' => $qty,
+                        'fournisseur' => 'BASCULE-ANNUELLE',
+                        'date_reception' => $openingDate,
+                    ]);
+                    $updated++;
+                    continue;
+                }
+
+                EntreesStock::create([
+                    'id_entrees_stocks' => (string) Str::uuid(),
+                    'id_product' => $product->id_product,
+                    'id_users' => $userId,
+                    'num_ordre' => $numOrdre,
+                    'quantite_entree' => $qty,
+                    'fournisseur' => 'BASCULE-ANNUELLE',
+                    'date_reception' => $openingDate,
+                ]);
+                $created++;
+            }
+        });
+
+        $totalProducts = Product::where('id_entreprise', $entrepriseId)->count();
+
+        return response()->json([
+            'message' => 'Bascule de stock effectuee',
+            'year' => $year,
+            'opening_date' => $openingDate,
+            'created_entries' => $created,
+            'updated_entries' => $updated,
+            'total_products' => $totalProducts,
+        ]);
     }
 
     private function parseCsvFile(UploadedFile $file): array

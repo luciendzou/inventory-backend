@@ -73,6 +73,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Liste de toutes les sorties -> GET /api/stock/exits
     Route::get('stock/exits', [ProductController::class, 'listExits']);
+    Route::post('stock/year-rollover', [ProductController::class, 'yearRollover']);
 
     // Gestion des profils
     Route::get('/profils', [ProfileController::class, 'index'])->withoutMiddleware('auth:sanctum');

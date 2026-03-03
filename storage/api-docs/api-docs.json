@@ -3541,6 +3541,82 @@
                 ]
             }
         },
+        "/api/stock/year-rollover": {
+            "post": {
+                "tags": [
+                    "Stock Mouvements"
+                ],
+                "summary": "Basculer le stock de fin d'annee vers la nouvelle annee",
+                "description": "Cree (ou met a jour) une entree d'ouverture au 1er janvier pour chaque produit avec le stock courant.",
+                "operationId": "ca0c8812cefbfead611914f6b8ddc800",
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "year": {
+                                        "description": "Annee cible (par defaut: annee courante)",
+                                        "type": "integer",
+                                        "example": 2027
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Bascule terminee",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Bascule de stock effectuee"
+                                        },
+                                        "year": {
+                                            "type": "integer",
+                                            "example": 2027
+                                        },
+                                        "opening_date": {
+                                            "type": "string",
+                                            "example": "2027-01-01"
+                                        },
+                                        "created_entries": {
+                                            "type": "integer",
+                                            "example": 25
+                                        },
+                                        "updated_entries": {
+                                            "type": "integer",
+                                            "example": 3
+                                        },
+                                        "total_products": {
+                                            "type": "integer",
+                                            "example": 40
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Acces refuse"
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/profils": {
             "get": {
                 "tags": [

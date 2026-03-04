@@ -530,7 +530,7 @@ class ProductController extends Controller
             'description'         => 'nullable|string',
             'quantite_min_alerte' => 'sometimes|required|integer|min:0',
             'conditionnement'     => 'nullable|string|max:50',
-            'prix'                => 'nullable|float',
+            'prix'                => 'nullable|numeric',
             'reference'           => 'nullable|string|max:255',
             'agence'              => 'nullable|string|max:255',
             'id_fournisseur'              => 'nullable|string|max:255',

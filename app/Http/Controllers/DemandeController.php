@@ -453,6 +453,49 @@ class DemandeController extends Controller
         return response()->json($demande->sorties);
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/api/demandes/{id}",
+     *     tags={"Demandes"},
+     *     summary="Supprimer une demande non traitee",
+     *     description="Supprime uniquement une demande en attente (EN_ATTENTE). Une demande validee ou refusee ne peut plus etre supprimee.",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID de la demande (UUID)",
+     *         @OA\Schema(type="string", format="uuid")
+     *     ),
+     *     @OA\Response(response=204, description="Demande supprimee"),
+     *     @OA\Response(response=403, description="Acces interdit"),
+     *     @OA\Response(response=404, description="Demande introuvable"),
+     *     @OA\Response(response=409, description="Demande deja traitee")
+     * )
+     */
+    public function destroy(Request $request, string $id)
+    {
+        $user = $request->user();
+
+        $demande = Demande::where('id_demande', $id)
+            ->where('id_entreprise', $user->id_entreprise)
+            ->firstOrFail();
+
+        if ($user->profil->nom !== 'Admin' && $user->id_users !== $demande->id_users) {
+            return response()->json(['message' => 'Acces interdit'], 403);
+        }
+
+        if ($demande->statut !== 'EN_ATTENTE') {
+            return response()->json([
+                'message' => 'Une demande deja traitee (validee ou refusee) ne peut pas etre supprimee',
+            ], 409);
+        }
+
+        $demande->delete();
+
+        return response()->noContent();
+    }
+
 
     private function generateNumeroOrdre()
     {

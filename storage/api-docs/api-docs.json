@@ -1289,6 +1289,45 @@
                         "sanctum": []
                     }
                 ]
+            },
+            "delete": {
+                "tags": [
+                    "Demandes"
+                ],
+                "summary": "Supprimer une demande non traitee",
+                "description": "Supprime uniquement une demande en attente (EN_ATTENTE). Une demande validee ou refusee ne peut plus etre supprimee.",
+                "operationId": "4b914b6cecaca4e71822b4cd8754f1b4",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la demande (UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Demande supprimee"
+                    },
+                    "403": {
+                        "description": "Acces interdit"
+                    },
+                    "404": {
+                        "description": "Demande introuvable"
+                    },
+                    "409": {
+                        "description": "Demande deja traitee"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             }
         },
         "/api/demandes/me": {

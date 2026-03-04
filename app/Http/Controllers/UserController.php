@@ -360,4 +360,82 @@ class UserController extends Controller
             'user' => $targetUser
         ], 200);
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/users/{id}/change-password",
+     *     operationId="changeUserPassword",
+     *     tags={"Users"},
+     *     summary="Changer le mot de passe d'un utilisateur",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="string", format="uuid")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"password","password_confirmation"},
+     *             @OA\Property(property="current_password", type="string", example="oldPassword123"),
+     *             @OA\Property(property="password", type="string", example="newPassword123"),
+     *             @OA\Property(property="password_confirmation", type="string", example="newPassword123")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Mot de passe modifie",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Mot de passe modifie avec succes")
+     *         )
+     *     ),
+     *     @OA\Response(response=403, description="Acces interdit"),
+     *     @OA\Response(response=404, description="Utilisateur introuvable"),
+     *     @OA\Response(response=422, description="Erreur de validation")
+     * )
+     */
+    public function changePassword(Request $request, string $id)
+    {
+        $authUser = $request->user();
+
+        $targetUser = User::where('id_entreprise', $authUser->id_entreprise)
+            ->where('id_users', $id)
+            ->first();
+
+        if (!$targetUser) {
+            return response()->json(['message' => 'Utilisateur introuvable'], 404);
+        }
+
+        $isSelf = $authUser->id_users === $targetUser->id_users;
+        $isAdmin = $authUser->profil?->nom === 'Admin';
+
+        if (!$isSelf && !$isAdmin) {
+            return response()->json(['message' => 'Acces interdit'], 403);
+        }
+
+        $rules = [
+            'password' => 'required|string|min:8|confirmed',
+        ];
+
+        if ($isSelf) {
+            $rules['current_password'] = 'required|string';
+        }
+
+        $data = $request->validate($rules);
+
+        if ($isSelf && !Hash::check($data['current_password'], $targetUser->password)) {
+            return response()->json([
+                'message' => 'Ancien mot de passe incorrect',
+            ], 422);
+        }
+
+        $targetUser->update([
+            'password' => Hash::make($data['password']),
+        ]);
+
+        return response()->json([
+            'message' => 'Mot de passe modifie avec succes',
+        ]);
+    }
 }

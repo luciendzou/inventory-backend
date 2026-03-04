@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\NotificationCreated;
 use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -17,7 +18,7 @@ class NotificationService
         string $message,
         array $data = []
     ): Notification {
-        return Notification::create([
+        $notification = Notification::create([
             'id_notification' => (string) Str::uuid(),
             'id_users' => $userId,
             'id_entreprise' => $entrepriseId,
@@ -28,6 +29,10 @@ class NotificationService
             'is_read' => false,
             'read_at' => null,
         ]);
+
+        event(new NotificationCreated($notification));
+
+        return $notification;
     }
 
     public function sendToRoleInEntreprise(
@@ -55,10 +60,9 @@ class NotificationService
         string $message,
         array $data = []
     ): int {
-        $rows = [];
-        $now = now();
+        $count = 0;
         foreach ($users as $user) {
-            $rows[] = [
+            $notification = Notification::create([
                 'id_notification' => (string) Str::uuid(),
                 'id_users' => $user->id_users,
                 'id_entreprise' => $entrepriseId,
@@ -68,17 +72,11 @@ class NotificationService
                 'data' => $data ?: null,
                 'is_read' => false,
                 'read_at' => null,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ];
+            ]);
+            event(new NotificationCreated($notification));
+            $count++;
         }
 
-        if (empty($rows)) {
-            return 0;
-        }
-
-        Notification::insert($rows);
-        return count($rows);
+        return $count;
     }
 }
-

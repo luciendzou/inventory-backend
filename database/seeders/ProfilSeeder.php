@@ -13,47 +13,31 @@ class ProfilSeeder extends Seeder
      */
     public function run(): void
     {
-        Profil::create([
-            'id_profil' => Str::uuid(),
-            'nom' => 'Admin',
-            'description' => 'Administrateur de la plateforme avec acces complet',
-        ]);
+        $profiles = [
+            ['nom' => 'Admin', 'description' => 'Administrateur de la plateforme avec acces complet'],
+            ['nom' => 'Direction', 'description' => 'Acces aux rapports et statistiques globales'],
+            ['nom' => 'Contrôle', 'description' => 'Controleur avec acces aux audits et verifications'],
+            ['nom' => 'Agence', 'description' => "Responsable d'agence avec gestion locale"],
+            ['nom' => 'Agent', 'description' => 'Agent standard avec acces limite'],
+            ['nom' => 'Stagiaire', 'description' => 'Profil stagiaire avec acces restreint'],
+            ['nom' => 'subAdmin', 'description' => 'Sous-administrateur avec privileges delegues'],
+        ];
 
-        Profil::create([
-            'id_profil' => Str::uuid(),
-            'nom' => 'Direction',
-            'description' => 'Acces aux rapports et statistiques globales',
-        ]);
+        foreach ($profiles as $profile) {
+            $existing = Profil::where('nom', $profile['nom'])->first();
 
-        Profil::create([
-            'id_profil' => Str::uuid(),
-            'nom' => 'Controle',
-            'description' => 'Controleur avec acces aux audits et verifications',
-        ]);
+            if ($existing) {
+                $existing->update([
+                    'description' => $profile['description'],
+                ]);
+                continue;
+            }
 
-        Profil::create([
-            'id_profil' => Str::uuid(),
-            'nom' => 'Agence',
-            'description' => "Responsable d'agence avec gestion locale",
-        ]);
-
-        Profil::create([
-            'id_profil' => Str::uuid(),
-            'nom' => 'Agent',
-            'description' => 'Agent standard avec acces limite',
-        ]);
-
-        Profil::create([
-            'id_profil' => Str::uuid(),
-            'nom' => 'Stagiaire',
-            'description' => 'Profil stagiaire avec acces restreint',
-        ]);
-
-        Profil::create([
-            'id_profil' => Str::uuid(),
-            'nom' => 'subAdmin',
-            'description' => 'Sous-administrateur avec privileges delegues',
-        ]);
+            Profil::create([
+                'id_profil' => (string) Str::uuid(),
+                'nom' => $profile['nom'],
+                'description' => $profile['description'],
+            ]);
+        }
     }
 }
-

@@ -2432,6 +2432,9 @@
                     "401": {
                         "description": "Non authentifie"
                     },
+                    "403": {
+                        "description": "Acces refuse"
+                    },
                     "422": {
                         "description": "Erreur de validation"
                     }
@@ -2942,7 +2945,7 @@
                 "tags": [
                     "Products"
                 ],
-                "summary": "Créer un produit ou alimenter un existant (Admin)",
+                "summary": "Créer un produit ou alimenter un existant (Admin, subAdmin, Stagiaire)",
                 "operationId": "e8185e307706e2cd84bbcf5171e2f09d",
                 "requestBody": {
                     "required": true,
@@ -3066,7 +3069,7 @@
                     "Products"
                 ],
                 "summary": "Importer des produits depuis un fichier CSV",
-                "description": "Importe des produits via un fichier CSV (admin uniquement).",
+                "description": "Importe des produits via un fichier CSV (Admin, subAdmin, Stagiaire).",
                 "operationId": "6bc5a8cd8fc19c68b2f489050292f697",
                 "requestBody": {
                     "required": true,

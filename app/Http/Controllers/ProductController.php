@@ -31,6 +31,11 @@ class ProductController extends Controller
         return Auth::user()?->profil?->nom === 'Admin';
     }
 
+    private function canManageProducts(): bool
+    {
+        return in_array(Auth::user()?->profil?->nom, ['Admin', 'subAdmin', 'Stagiaire'], true);
+    }
+
     private function isDirectionOrControle(): bool
     {
         return in_array(Auth::user()?->profil?->nom, ['Direction', 'Contrôle']);
@@ -71,7 +76,7 @@ class ProductController extends Controller
      * @OA\Post(
      * path="/api/products",
      * tags={"Products"},
-     * summary="Créer un produit ou alimenter un existant (Admin)",
+     * summary="Créer un produit ou alimenter un existant (Admin, subAdmin, Stagiaire)",
      * security={{"sanctum":{}}},
      * @OA\RequestBody(
      * required=true,
@@ -117,7 +122,7 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        if (!$this->isAdmin()) {
+        if (!$this->canManageProducts()) {
             return response()->json(['message' => 'Accès refusé'], 403);
         }
 
@@ -223,7 +228,7 @@ class ProductController extends Controller
      *     path="/api/products/import-csv",
      *     tags={"Products"},
      *     summary="Importer des produits depuis un fichier CSV",
-     *     description="Importe des produits via un fichier CSV (admin uniquement).",
+     *     description="Importe des produits via un fichier CSV (Admin, subAdmin, Stagiaire).",
      *     security={{"sanctum":{}}},
      *     @OA\RequestBody(
      *         required=true,
@@ -291,7 +296,7 @@ class ProductController extends Controller
      */
     public function importCsv(Request $request)
     {
-        if (!$this->isAdmin()) {
+        if (!$this->canManageProducts()) {
             return response()->json(['message' => 'Acces refuse'], 403);
         }
 

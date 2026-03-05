@@ -103,11 +103,16 @@ class OrdonanceController extends Controller
      *         @OA\JsonContent(ref="#/components/schemas/Ordonance")
      *     ),
      *     @OA\Response(response=401, description="Non authentifie"),
+     *     @OA\Response(response=403, description="Acces refuse"),
      *     @OA\Response(response=422, description="Erreur de validation")
      * )
      */
     public function store(Request $request)
     {
+        if (!$this->canCreateOrdonance()) {
+            return response()->json(['message' => 'Acces refuse'], 403);
+        }
+
         $data = $request->validate([
             'compte_budgetaire' => 'required|string|max:150',
             'imputation_budgetaire' => 'required|string|max:150',
@@ -352,5 +357,10 @@ class OrdonanceController extends Controller
     private function isAdmin(): bool
     {
         return Auth::user()?->profil?->nom === 'Admin';
+    }
+
+    private function canCreateOrdonance(): bool
+    {
+        return in_array(Auth::user()?->profil?->nom, ['Admin', 'subAdmin', 'Stagiaire'], true);
     }
 }

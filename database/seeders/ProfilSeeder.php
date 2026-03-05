@@ -16,31 +16,44 @@ class ProfilSeeder extends Seeder
         Profil::create([
             'id_profil' => Str::uuid(),
             'nom' => 'Admin',
-            'description' => 'Administrateur de la plateforme avec accès complet',
+            'description' => 'Administrateur de la plateforme avec acces complet',
         ]);
 
         Profil::create([
             'id_profil' => Str::uuid(),
             'nom' => 'Direction',
-            'description' => 'Accès aux rapports et statistiques globales',
+            'description' => 'Acces aux rapports et statistiques globales',
         ]);
 
         Profil::create([
             'id_profil' => Str::uuid(),
-            'nom' => 'Contrôle',
-            'description' => 'Contrôleur avec accès aux audits et vérifications',
+            'nom' => 'Controle',
+            'description' => 'Controleur avec acces aux audits et verifications',
         ]);
 
         Profil::create([
             'id_profil' => Str::uuid(),
             'nom' => 'Agence',
-            'description' => 'Responsable d\'agence avec gestion locale',
+            'description' => "Responsable d'agence avec gestion locale",
         ]);
 
         Profil::create([
             'id_profil' => Str::uuid(),
             'nom' => 'Agent',
-            'description' => 'Agent standard avec accès limité',
+            'description' => 'Agent standard avec acces limite',
+        ]);
+
+        Profil::create([
+            'id_profil' => Str::uuid(),
+            'nom' => 'Stagiaire',
+            'description' => 'Profil stagiaire avec acces restreint',
+        ]);
+
+        Profil::create([
+            'id_profil' => Str::uuid(),
+            'nom' => 'subAdmin',
+            'description' => 'Sous-administrateur avec privileges delegues',
         ]);
     }
 }
+

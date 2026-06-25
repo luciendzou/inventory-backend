@@ -438,4 +438,95 @@ class UserController extends Controller
             'message' => 'Mot de passe modifie avec succes',
         ]);
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/users/{id}/regenerate-password",
+     *     operationId="regenerateUserPassword",
+     *     tags={"Users"},
+     *     summary="Regenerer le mot de passe d'un utilisateur",
+     *     description="Permet a un administrateur de regenerer un mot de passe temporaire pour un utilisateur de son entreprise.",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="string", format="uuid")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Mot de passe regenere",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Mot de passe regenere avec succes"),
+     *             @OA\Property(property="temporary_password", type="string", example="Abc12345@xYz"),
+     *             @OA\Property(property="user", ref="#/components/schemas/User")
+     *         )
+     *     ),
+     *     @OA\Response(response=403, description="Acces interdit"),
+     *     @OA\Response(response=404, description="Utilisateur introuvable")
+     * )
+     */
+    public function regeneratePassword(Request $request, string $id)
+    {
+        $authUser = $request->user();
+
+        if ($authUser->profil?->nom !== 'Admin') {
+            return response()->json(['message' => 'Acces interdit'], 403);
+        }
+
+        $targetUser = User::with('profil')
+            ->where('id_entreprise', $authUser->id_entreprise)
+            ->where('id_users', $id)
+            ->first();
+
+        if (!$targetUser) {
+            return response()->json(['message' => 'Utilisateur introuvable'], 404);
+        }
+
+        $temporaryPassword = $this->generateTemporaryPassword();
+
+        $targetUser->update([
+            'password' => Hash::make($temporaryPassword),
+        ]);
+
+        $targetUser->tokens()->delete();
+
+        return response()->json([
+            'message' => 'Mot de passe regenere avec succes',
+            'temporary_password' => $temporaryPassword,
+            'user' => $targetUser->fresh('profil'),
+        ]);
+    }
+
+    private function generateTemporaryPassword(int $length = 12): string
+    {
+        $lowercase = 'abcdefghijkmnopqrstuvwxyz';
+        $uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        $digits = '23456789';
+        $symbols = '@#$%&*!?';
+        $all = $lowercase . $uppercase . $digits . $symbols;
+
+        $password = [
+            $this->randomCharacter($lowercase),
+            $this->randomCharacter($uppercase),
+            $this->randomCharacter($digits),
+            $this->randomCharacter($symbols),
+        ];
+
+        while (count($password) < $length) {
+            $password[] = $this->randomCharacter($all);
+        }
+
+        for ($index = count($password) - 1; $index > 0; $index--) {
+            $swapIndex = random_int(0, $index);
+            [$password[$index], $password[$swapIndex]] = [$password[$swapIndex], $password[$index]];
+        }
+
+        return implode('', $password);
+    }
+
+    private function randomCharacter(string $characters): string
+    {
+        return $characters[random_int(0, strlen($characters) - 1)];
+    }
 }

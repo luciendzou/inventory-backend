@@ -4443,6 +4443,63 @@
                     }
                 ]
             }
+        },
+        "/api/users/{id}/regenerate-password": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Regenerer le mot de passe d'un utilisateur",
+                "description": "Permet a un administrateur de regenerer un mot de passe temporaire pour un utilisateur de son entreprise.",
+                "operationId": "regenerateUserPassword",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Mot de passe regenere",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Mot de passe regenere avec succes"
+                                        },
+                                        "temporary_password": {
+                                            "type": "string",
+                                            "example": "Abc12345@xYz"
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Acces interdit"
+                    },
+                    "404": {
+                        "description": "Utilisateur introuvable"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
         }
     },
     "components": {

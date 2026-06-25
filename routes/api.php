@@ -48,6 +48,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('users', UserController::class);
     Route::post('/users/{id}/profile-picture', [UserController::class, 'uploadProfilePicture']);
     Route::post('/users/{id}/change-password', [UserController::class, 'changePassword']);
+    Route::post('/users/{id}/regenerate-password', [UserController::class, 'regeneratePassword']);
     Route::put('/users/{id}/assign-pole', [UserController::class, 'assignPole']);
 
     // Gestion des produits
